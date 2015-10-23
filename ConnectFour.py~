@@ -81,6 +81,8 @@ def makeMove(theRack, column):
         if theRack[x][column] == '*':
             theRack[x][column] = currPlayer
             return theRack
+        
+    return theRack
 
 #Print out the board and change whose turn it is
 def printBoard(theRack):
@@ -101,11 +103,11 @@ class boardNode:
     value = None
 
     def explode(self):
-        for index in range (0,7):
-            if self.futureRack[0][index] == '*':
+        for index in range (1,7):
+            if self.futureRack[0][index-1] == '*':
                 self.children.append(boardNode())
-                self.children[index].futureRack = makeMove(self.futureRack, index)
-                self.children[index].depth = self.depth + 1
+                self.children[index-1].futureRack = makeMove(self.futureRack, index)
+                self.children[index-1].depth = self.depth + 1
 
 #Create a function that looks 4 moves ahead
 #This requires making all (up to) 7 possible moves
