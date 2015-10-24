@@ -1,0 +1,26 @@
+def minimax(aNode):
+    aNode.explode()
+
+    depth = aNode.depth + 1
+
+    if depth == globalDepth:
+    #evaluate all of this nodes children, updating
+    #alpha and beta as needed throughout
+       return evaluate(aNode)
+
+    for child in children:
+        if(children[child] != None):
+        value = minimax(child) 
+    
+           if aNode.depth.iseven
+              if value > alpha
+              alpha = value
+           else
+              if value < beta
+              beta = value
+           #prune
+           if alpha > beta
+              if aNode.depth.iseven
+                 return alpha
+              else
+                 return beta
