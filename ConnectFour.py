@@ -2,7 +2,7 @@ import sys
 import copy
 
 rack = [['*' for x in range(7)] for x in range(6)]
-globalDepth = 4
+globalDepth = 5
 currPlayer = "R"
 column = 0
 game = "incomplete"
@@ -120,14 +120,15 @@ class rackNode:
                 #Create a new node representing that move
                 self.children.append(rackNode(self.futureRack))
                 if(self.depth % 2 == 0):
-                    makeMove(self.children[index].futureRack, index+1, "R")
+                    makeMove(self.children[index].futureRack, index+1, "B")
                 else:
-                     makeMove(self.children[index].futureRack, index+1, "B")
+                     makeMove(self.children[index].futureRack, index+1, "R")
                 #Increment it's depth to 1 more than it's parent's
                 self.children[index].depth = self.depth + 1
                 #Initialize alpha and beta to that of parent node's
                 self.children[index].alpha = self.alpha
                 self.children[index].beta = self.beta
+              
             else:
                 #Otherwise, if a move cannot be made, put a null object
                 #in the index
@@ -140,7 +141,8 @@ def minimax(aNode):
     
     #Evaluate leaves if we are at maxDepth
     if(aNode.depth + 1 >= globalDepth):
-        return evaluate(aNode)
+        num = evaluate(aNode)
+        return num
 
     #For all 7 children
     for ii in range(0,7):
@@ -166,18 +168,23 @@ def minimax(aNode):
                 if(value < aNode.beta):
                     aNode.prodigalSon = ii
                     aNode.beta = value
+    if(aNode.depth % 2 == 0):
+        return aNode.alpha
+    else:
+        return aNode.beta
 
 #Evaluation function
 def evaluate(parent):
-
-    retVal = 0
     
+    if(parent.depth % 2 == 0):  #Max Node
+        retVal = parent.alpha
+    else:
+        retVal = parent.beta
     #For each child
     for index in range(0,7):
-        value = 0
         #If the child is not null
         if parent.children[index] != None:
-            
+            value = 0
             #Check each space in the rack
             for row in range (0,6):
                 for column in range (0, 7):
@@ -187,17 +194,18 @@ def evaluate(parent):
                         #and add that to the rack's score
                         if parent.children[index].futureRack[row][column] == "B":
                             value += int(evalHelper(parent.children[index].futureRack, row, column, 0, 0, "B", "B", "R", x))
+                        elif parent.children[index].futureRack[row][column] == "R":
                             value -= int(evalHelper(parent.children[index].futureRack, row, column, 0, 0, "R", "R", "B", x))
-
-        #Return max or min of children, depending
-        if(parent.depth % 2 == 0):  #Max Node
-            if(value > retVal):
-                parent.prodigalSon = index
-                retVal = value
-        else:
-            if(value < retVal):
-                parent.prodigalSon = index
-                retVal = value
+            
+            #Return max or min of children, depending
+            if(parent.depth % 2 == 0):  #Max Node
+                if(value > retVal):
+                    parent.prodigalSon = index
+                    retVal = value
+            else:
+                if(value < retVal):
+                    parent.prodigalSon = index
+                    retVal = value
 
     return retVal
 
@@ -206,8 +214,8 @@ def evaluate(parent):
 
 def evalHelper(evalRack, row, column, total, stars, currColor, initColor, oppColor, direction ):
 
-    if total == 4 and currColor == "B":
-        return 800
+    if total == 4 and currColor == initColor:
+        return 200
        
     #We went out of bounds or hit a red piece
     if row < 0 or row > 5 or column < 0 or column > 6 or evalRack[row][column] == oppColor or (currColor == "STAR" and evalRack[row][column] == initColor):
