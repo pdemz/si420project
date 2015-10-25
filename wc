@@ -1,0 +1,13 @@
+Human, what's your move?
+Human, what's your move?
+Human, what's your move?
+Human, what's your move?
+Invalid move, try again.
+Human, what's your move?
+Human, what's your move?
+Human, what's your move?
+Human, what's your move?
+Traceback (most recent call last):
+  File "ConnectFour.py", line 263, in <module>
+    column = input("Human, what's your move?\n")
+KeyboardInterrupt
