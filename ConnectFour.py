@@ -109,8 +109,8 @@ class rackNode:
         self.depth = 0
         self.retVal = 0
         self.prodigalSon = 0 #index of max or min child, depending on which kind of node it is
-        self.alpha = -1000
-        self.beta = 1000
+        self.alpha = -100000
+        self.beta = 100000
 
     def explode(self):
         #For 7 children
@@ -141,14 +141,17 @@ def minimax(aNode):
     
     #Evaluate leaves if we are at maxDepth
     if(aNode.depth + 1 >= globalDepth):
-        num = evaluate(aNode)
+        num = evaluate(aNode) #O(7)
         return num
 
     #For all 7 children
     for ii in range(0,7):
         #If there is a node at this index then recurse
         if(aNode.children[ii] != None):
+            aNode.children[ii].alpha = aNode.alpha
+            aNode.children[ii].beta = aNode.beta
             value = minimax(aNode.children[ii])
+            
             #Max Node
             if(aNode.depth % 2 == 0):
                 #prune
@@ -163,7 +166,7 @@ def minimax(aNode):
             else:
             #prune
                 if(value <= aNode.alpha):
-                    return aNode.beta
+                    return aNode.alpha
                 #updata beta
                 if(value < aNode.beta):
                     aNode.prodigalSon = ii
@@ -189,38 +192,41 @@ def evaluate(parent):
             for row in range (0,6):
                 for column in range (0, 7):
                     #For the 8 directions
+                   # if parent.children[index].futureRack[row][column] != '*':
                     for x in range (0, 8):
                         #If there is a black piece here see if there are any rows coming from it
                         #and add that to the rack's score
                         if parent.children[index].futureRack[row][column] == "B":
                             value += int(evalHelper(parent.children[index].futureRack, row, column, 0, 0, "B", "B", "R", x))
+                           # value += evalTwo(parent.children[index].futureRack, row, column, "B")
                         elif parent.children[index].futureRack[row][column] == "R":
                             value -= int(evalHelper(parent.children[index].futureRack, row, column, 0, 0, "R", "R", "B", x))
-            
-            #Return max or min of children, depending
+                           # value -= evalTwo(parent.children[index].futureRack, row, column, "R")
+        #Return max or min of children, depending
             if(parent.depth % 2 == 0):  #Max Node
                 if(value > retVal):
                     parent.prodigalSon = index
+                    parent.alpha = value
                     retVal = value
             else:
                 if(value < retVal):
                     parent.prodigalSon = index
+                    parent.beta = value
                     retVal = value
 
     return retVal
-
  
           
 
 def evalHelper(evalRack, row, column, total, stars, currColor, initColor, oppColor, direction ):
 
     if total == 4 and currColor == initColor:
-        return 200
+        return 1000
        
     #We went out of bounds or hit a red piece
     if row < 0 or row > 5 or column < 0 or column > 6 or evalRack[row][column] == oppColor or (currColor == "STAR" and evalRack[row][column] == initColor):
         if(stars + total > 3):
-            return total*total*total
+            return total*total
         else:
             return 0
 
@@ -252,9 +258,105 @@ def evalHelper(evalRack, row, column, total, stars, currColor, initColor, oppCol
 
     if currColor == "STAR":
         return evalHelper(evalRack, row, column, total, stars+1, currColor, initColor, oppColor, direction)
-    else:
+    elif currColor == initColor:
         return evalHelper(evalRack, row, column, total+1, stars, currColor, initColor, oppColor, direction)
 
+def evalTwo(aRack, row, col, color):
+    total = 0
+    stars = 0
+    initRow = row
+    initCol = col
+    line = 0
+    #check straight up
+    if row >= 3:
+        while row < 6 and row >= 0 and col < 7 and col >= 0 and aRack[row][col] == color:
+            row -= 1
+            line += 1
+            if line == 4:
+                total += 700
+                break
+        if line < 4:
+            row = initRow + line
+            while row < 6 and row >= 0 and col < 7 and col >= 0 and aRack[row][col] == '*':
+                row -= 1
+                stars += 1
+                if line + stars == 4:
+                    total += line * line * line
+                    break
+            
+
+    row = initRow
+    col = initCol
+    stars = 0
+    line = 0
+
+    #check right
+    if col < 4:
+        while row < 6 and row >= 0 and col < 7 and col >= 0 and aRack[row][col] == color:
+            col += 1
+            line += 1
+            if line == 4:
+                total += 700
+                break
+        if line < 4:
+            col = initCol + line
+            while row < 6 and row >= 0 and col < 7 and col >= 0 and aRack[row][col] == '*':
+                col += 1
+                stars += 1
+                if line + stars == 4:
+                    total += line * line * line
+                    break
+    
+    row = initRow
+    col = initCol
+    stars = 0
+    line = 0
+
+    #check right diag
+    if row >= 3 and col <= 3:
+        while row < 6 and row >= 0 and col < 7 and col >= 0 and aRack[row][col] == color:
+            col += 1
+            row -= 1
+            line += 1
+            if line == 4:
+                total += 500
+                break
+        if line < 4:
+            row = initRow - line
+            col = initCol + line
+            while row < 6 and row >= 0 and col < 7 and col >= 0 and aRack[row][col] == '*':
+                row -= 1
+                col += 1
+                stars += 1
+                if line + stars == 4:
+                    total += line * line * line
+                    break
+
+    row = initRow
+    col = initCol
+    stars = 0
+    line = 0
+
+    #check left diag
+    if row >= 3 and col >= 3:
+        while row < 6 and row >= 0 and col < 7 and col >= 0 and aRack[row][col] == color:
+            col += 1
+            line += 1
+            if line == 4:
+                total += 500
+                break
+        if line < 4:
+            row = initRow + line
+            while row < 6 and row >= 0 and col < 7 and col >= 0 and aRack[row][col] == '*':
+                row -= 1
+                col -= 1
+                stars += 1
+                if line + stars == 4:
+                    total += line * line * line
+                    break
+    
+    return total
+    
 
 #Continue the game until the user enters a 'q'
 printRack(rack)
