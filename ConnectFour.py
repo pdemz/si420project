@@ -2,7 +2,7 @@ import sys
 import copy
 
 rack = [['*' for x in range(7)] for x in range(6)]
-globalDepth = 5
+globalDepth = int(sys.argv[1])
 currPlayer = "R"
 column = 0
 game = "incomplete"
@@ -359,8 +359,15 @@ def evalTwo(aRack, row, col, color):
     
 
 #Continue the game until the user enters a 'q'
+
 printRack(rack)
 i = 0
+
+firstPlayer = raw_input("h or c goes first?\n")
+if firstPlayer == 'h':
+    currPlayer = "B"
+elif firstPlayer == 'c':
+    currPlayer = "R"
 while(game == "incomplete"):
     if currPlayer == "R":
         print("Computer turn\n")
